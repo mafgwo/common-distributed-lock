@@ -1,0 +1,164 @@
+buildscript {
+  repositories {
+    mavenLocal()
+    maven { url "$mavenUrl/nexus/content/groups/public/" }
+    maven { url "$mavenUrl/nexus/content/repositories/thirdparty/" }
+    maven { url "$mavenUrl/nexus/content/repositories/releases/" }
+    maven { url "$mavenUrl/nexus/content/repositories/mvnrepository/" }
+    mavenCentral()
+    maven { url 'https://maven.aliyun.com/repository/central' }
+    maven { url 'https://maven.aliyun.com/repository/spring' }
+    maven { url 'https://maven.aliyun.com/repository/spring-plugin' }
+    maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+    maven { url 'https://repo.spring.io/plugins-release/' }
+//        maven { url 'https://maven-central.storage.googleapis.com' }
+  }
+  dependencies {
+    classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
+    classpath("org.springframework.build.gradle:propdeps-plugin:0.0.7")
+    classpath 'org.akhikhl.gretty:gretty:1.2.4'
+    classpath "org.flywaydb:flyway-gradle-plugin:3.2.1"
+  }
+}
+
+configure(allprojects) {
+  apply plugin: 'propdeps'
+  apply plugin: 'propdeps-maven'
+  apply plugin: 'propdeps-idea'
+  apply plugin: 'propdeps-eclipse'
+}
+
+subprojects {
+  apply plugin: 'idea'
+  apply plugin: "java"
+  apply plugin: 'org.springframework.boot'
+  apply plugin: 'io.spring.dependency-management'
+  group = 'com.mafgwo.common.distributed-lock'
+  version = '1.0'
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+  repositories {
+    mavenLocal()
+    maven { url "$mavenUrl/nexus/content/groups/public/" }
+    maven { url "$mavenUrl/nexus/content/repositories/thirdparty/" }
+    maven { url "$mavenUrl/nexus/content/repositories/mvnrepository/" }
+    maven { url 'https://repo.spring.io/libs-milestone' }
+    mavenCentral()
+    maven { url 'https://maven.aliyun.com/repository/central' }
+    maven { url 'https://maven.aliyun.com/repository/spring' }
+    maven { url 'https://maven.aliyun.com/repository/spring-plugin' }
+    maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+    maven { url 'https://repo.spring.io/plugins-release/' }
+    maven { url 'https://maven-central.storage.googleapis.com' }
+  }
+
+  ext {
+    lombokVersion = "1.18.12"
+    redissonVersion = "3.2.0"
+    compileJava.options.encoding = 'UTF-8'
+    compileTestJava.options.encoding = 'UTF-8'
+  }
+  dependencyManagement {
+    imports {
+      mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
+      mavenBom("org.springframework.boot:spring-boot-starter:${springBootVersion}")
+    }
+    dependencies {
+      dependency group: 'org.redisson', name: 'redisson', version: "${redissonVersion}"
+      dependency group: 'org.projectlombok', name: 'lombok', version: "${lombokVersion}"
+    }
+  }
+  tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+  }
+}
+
+project(':common-distributed-lock-core') {
+  apply plugin: 'idea'
+  apply plugin: 'java'
+
+  version = '1.0'
+  dependencies {
+    compile('org.springframework.boot:spring-boot-configuration-processor')
+    compile('org.springframework.boot:spring-boot-autoconfigure')
+    compile('org.springframework.boot:spring-boot-starter-aop')
+    compile('org.redisson:redisson')
+    annotationProcessor('org.projectlombok:lombok')
+    compileOnly('org.projectlombok:lombok')
+  }
+  uploadArchives {
+    repositories {
+      mavenDeployer {
+        repository(url: "$mavenUrl/nexus/content/repositories/releases/") {
+          authentication(userName: "$artifactoryUsername", password: "$artifactoryPassword")
+        }
+        pom.project {
+          name = project.name
+          packaging = 'jar'
+          description = 'common-distributed-lock-core'
+        }
+      }
+    }
+  }
+  jar.enabled = true
+  bootJar.enabled = false
+}
+
+project(':common-distributed-lock-starter') {
+  version = '1.0'
+  apply plugin: 'io.spring.dependency-management'
+
+  dependencies {
+    compile project(':common-distributed-lock-core')
+  }
+  uploadArchives {
+    repositories {
+      mavenDeployer {
+        repository(url: "$mavenUrl/nexus/content/repositories/releases/") {
+          authentication(userName: "$artifactoryUsername", password: "$artifactoryPassword")
+        }
+        pom.project {
+          name = project.name
+          packaging = 'jar'
+          description = 'common-distributed-lock-starter'
+        }
+      }
+    }
+  }
+  jar.enabled = true
+  bootJar.enabled = false
+}
+
+project(':common-distributed-lock-example') {
+  apply plugin: 'idea'
+  apply plugin: 'java'
+
+  version = '1.0'
+  dependencies {
+    compile project(':common-distributed-lock-starter')
+    compile('org.springframework.boot:spring-boot-starter-test')
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compile('org.springframework.boot:spring-boot-starter')
+    annotationProcessor('org.projectlombok:lombok')
+    compileOnly('org.projectlombok:lombok')
+  }
+  bootJar {
+    baseName = 'common-distributed-lock-example'
+    version = '1.0'
+  }
+  jar {
+    manifest {
+      attributes "Manifest-Version": 1.0,
+              'Main-Class': 'com.mafgwo.common.distributed.lock.example.ExampleApplication'
+    }
+  }
+  task copyDeploy() {
+    copy {
+      from('build/libs/common-distributed-lock-example-1.0.jar')
+      into('build/libs/')
+      rename {
+        'common-distributed-lock-example.jar'
+      }
+    }
+  }
+}

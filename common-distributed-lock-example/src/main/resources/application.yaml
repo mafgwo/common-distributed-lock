@@ -1,0 +1,10 @@
+server:
+  port: 8899
+
+spring:
+  application:
+    name: example-service
+  redis:
+#    host: localhost
+    cluster:
+      nodes: 10.0.43.249:7001,10.0.43.249:7002,10.0.43.249:7003,10.0.43.249:7004,10.0.43.249:7005,10.0.43.249:7006
