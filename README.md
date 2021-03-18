@@ -15,7 +15,7 @@
 <dependency>
   <groupId>com.mafgwo.common.distributed-lock</groupId>
   <artifactId>common-distributed-lock-starter</artifactId>
-  <version>1.0</version>
+  <version>1.0.0</version>
 </dependency>
 
 # gradle项目引入依赖

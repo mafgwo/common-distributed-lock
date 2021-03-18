@@ -1,4 +1,0 @@
-rootProject.name = 'common-distributed-lock'
-include ':common-distributed-lock-starter'
-include ':common-distributed-lock-core'
-include ':common-distributed-lock-example'
