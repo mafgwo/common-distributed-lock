@@ -21,7 +21,7 @@
 </dependency>
 
 # gradle项目引入依赖
-compile('com.mafgwo.common.distributed-lock:common-distributed-lock-starter:1.0')
+compile('com.mafgwo.common.distributed-lock:common-distributed-lock-starter:1.0.0')
 ```
 
 2.application.yaml的redis配置（可以单机、可以集群）与spring boot redis starter的配置保持一致如下
