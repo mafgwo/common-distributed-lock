@@ -11,7 +11,7 @@
 
 1.添加lock starter组件依赖
 ```
-# maven项目引入依赖
+# maven项目引入依赖 版本号请查看中央仓库最新版本
 <dependency>
   <groupId>com.mafgwo.common.distributed-lock</groupId>
   <artifactId>common-distributed-lock-starter</artifactId>
@@ -22,7 +22,7 @@
 compile('com.mafgwo.common.distributed-lock:common-distributed-lock-starter:1.0')
 ```
 
-2.application.yaml的redis配置与spring boot redis starter的配置保持一致如下
+2.application.yaml的redis配置（可以单机、可以集群）与spring boot redis starter的配置保持一致如下
 ```$yaml
 spring:
   redis:
